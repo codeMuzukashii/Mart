@@ -14,7 +14,6 @@ def check_is_vip_only(function):
     def wrapper(*args, **kwargs):
         product_id = args[0]
         is_vip = args[2]
-        print('is_vip:', is_vip)
         product_obj = Product.objects.get(product_id=product_id)
         if is_vip in (1, '1'):
             is_vip = True
