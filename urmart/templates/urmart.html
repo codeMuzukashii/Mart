@@ -1,0 +1,132 @@
+{% load render_table from django_tables2 %}
+{% load static %}
+<!doctype html>
+<html>
+    <head>
+        <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+        <link rel="stylesheet" href="{% static 'django_tables2/themes/paleblue/css/screen.css' %}" />
+        <style>
+            .button1 {
+                border-radius: 100%;
+            }
+            .button2 {
+                border-radius: 12px;
+            }
+            </style>
+    </head>
+    <body>
+        <div>
+            <div>
+                <select name="Select Product" id="product_id">
+                    <option value="" disabled selected>Select Product</option>
+                    {% for pro_id in pro_id_list %}
+                    <option value="{{ pro_id }}">{{ pro_id }}</option>
+                    {% endfor %}
+                </select>
+                <input id="qty" type="number" name="Quantity" placeholder="數量">
+                <button id="save" type="button" class="btn btn-primary button1" onclick="saveOrder()">+</button>
+                <input type="text" placeholder="Customer ID" id="customer_id">
+                <span>
+                    <input id="is_vip" type="checkbox" name="is_vip">是否為ＶＩＰ身份
+                </span>
+            </div>
+            <br>
+        </div>
+        <h1>商品列表</h1>
+        {% render_table tb_product %}
+        <br>
+        <h1>訂單記錄</h1>
+        {% render_table tb_order %}
+        <br>
+        <div>
+            <button id="top3" type="button" class="btn btn-primary button2">Top3</button>
+        </div>
+    </body>
+</html>
+
+
+<script src="https://code.jquery.com/jquery-3.4.1.slim.min.js" integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js" integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+<script>
+    function saveOrder() {
+        var product_id = $('#product_id').val();
+        if (product_id == null) {
+            return alert('Must select product.')
+        };
+        var qty = $('#qty').val();
+        var customer_id = $('#customer_id').val();
+        var is_vip = 0;
+        if($("#is_vip").is(':checked')) {
+            is_vip = 1;
+        }
+        $.ajax({
+            type:"POST",
+            url:'/urmart/save_order/',
+            data:{
+                'product_id':product_id,
+                'qty':qty,
+                'customer_id':customer_id,
+                'is_vip':is_vip
+            },
+            success:function(result) {
+                alert('Success');
+                location.reload();
+            },
+            error:function(result) {
+                msg = JSON.parse(result['responseText'])['message'];
+                alert(msg);
+            }
+        });
+    }
+
+    $(".delete_btn").click(function(){
+        var order_id = $(this).val();
+        deleteOrder(order_id);
+    });
+
+    function deleteOrder(order_id) {
+        $.ajax({
+            type:"POST",
+            url:'/urmart/delete_order/',
+            data:{
+                'order_id':order_id
+            },
+            success:function(result) {
+                var msg = result['message'];
+                alert(msg);
+                location.reload();
+            },
+            error:function(result) {
+                var msg = JSON.parse(result['responseText'])['message'];
+                alert(msg);
+            }
+        });
+    }
+
+    $("#top3").click(function(){
+        $.ajax({
+            type:"POST",
+            url:'/urmart/show_top3/',
+            data:{
+                '':''
+            },
+            success:function(result) {
+                // console.log(result['data'][0]['product_id']);
+                alert_msg = '銷售排行\n';
+                num = 1;
+                for(var i = 0; i < 3; i++){
+                    alert_msg = alert_msg + '第' + num + '名：' + result['data'][i]['product_id']
+                              +  ' 總計：' + result['data'][i]['total_qty'] + '個' + '\n';
+                    num++
+                }
+                alert(alert_msg)
+            },
+            error:function(result) {
+                var msg = JSON.parse(result['responseText'])['message'];
+                alert(msg);
+            }
+        });
+    });
+</script>
