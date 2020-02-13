@@ -27,6 +27,7 @@ DEBUG = True
 
 ALLOWED_HOSTS = []
 
+# EmailMessage setting
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_USE_TLS = True
 EMAIL_HOST = 'smtp.gmail.com'
@@ -50,6 +51,7 @@ INSTALLED_APPS = [
     'django_q',
 ]
 
+# 排程器 django q setting
 Q_CLUSTER = {
     'name': 'DjangORM',
     'workers': 1,

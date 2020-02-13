@@ -1,14 +1,8 @@
-from django.views.decorators.http import require_http_methods
+import json
+from traceback import format_exc
 from .models import Order, Product
-
-
-# def compose(*funs):
-#     def deco(f):
-#         for fun in reversed(funs):
-#             f = fun(f)
-#         return f
-#     return deco
-
+from django.core.mail import EmailMessage
+from django.db import connection
 
 def check_is_vip_only(function):
     def wrapper(*args, **kwargs):
@@ -45,12 +39,10 @@ def check_stock_pcs(function):
 
 def check_stock_is_arrived(function):
     def wrapper(*args, **kwargs):
-        print(args)
         order_id = args[0]
         order_obj = Order.objects.get(id=order_id)
         product_obj = order_obj.product_id
         qty = order_obj.qty
-
         stock_pcs_in_db = product_obj.stock_pcs
 
         is_arrived = True if stock_pcs_in_db == 0 and qty >= 1 else False
@@ -74,7 +66,7 @@ def create_order(product_id, qty, is_vip):
         order_obj.save()
         product_obj.stock_pcs -= int(qty)
         product_obj.save()
-    except:
+    except Exception:
         raise
     return {'success': True, 'msg': ''}
 
@@ -87,7 +79,47 @@ def delete_order(order_id, is_arrived=False):
         order_obj.delete()
         product_obj.stock_pcs += int(order_obj.qty)
         product_obj.save()
-    except:
+    except Exception:
         raise
     msg = '商品到貨' if is_arrived is True else 'success'
     return {'success': True, 'msg': msg}
+
+
+def send_shop_info_today():
+    try:
+        cursor = connection.cursor()
+        sql = "select `shop_id`, (`price` * `qty`) as `total_price`, sum(`qty`) as `total_qty`, count(*) as `total_orders` from `tb_order` GROUP by `shop_id`;"
+        cursor.execute(sql)
+        datas = cursor.fetchall()
+        result = []
+        for data in datas:
+            result.append(dict({
+                "shop_id": data[0],
+                "total_price": data[1],
+                "total_qty": data[2],
+                "total_orders": data[3]
+            }))
+        email = EmailMessage('Shop info of today', json.dumps(result), to=['blitz9211@msn.com'])
+        email.send()
+
+    except Exception:
+        print('send_shop_info_today exception:')
+        print(format_exc())
+
+
+def show_top3():
+    result = []
+    try:
+        cursor = connection.cursor()
+        sql = "select `product_id_id`, sum(`qty`) as `total_qty` from `tb_order` GROUP by `product_id_id` order by `total_qty` desc limit 3;"
+
+        cursor.execute(sql)
+        datas = cursor.fetchall()
+        for data in datas:
+            result.append(dict({
+                "product_id": data[0],
+                "total_qty": data[1],
+            }))
+    except Exception:
+        raise
+    return result
