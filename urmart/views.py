@@ -6,10 +6,8 @@ from django.http import JsonResponse
 from . import order
 from .table import ProductTable, OrderTable
 from .models import Product, Order
-from rest_framework.decorators import api_view
 
 
-@api_view(['GET', 'POST'])
 def product(request):
     tb_product = ProductTable(Product.objects.all())
     RequestConfig(request).configure(tb_product)
@@ -27,7 +25,7 @@ def product(request):
     return render(request, 'urmart.html', tables)
 
 
-@api_view(['POST'])
+@csrf_exempt
 def save_order(request):
     msg = ''
     status = 500
@@ -58,7 +56,7 @@ def save_order(request):
     return JsonResponse(response, status=status, safe=False)
 
 
-@api_view(['GET', 'POST'])
+@csrf_exempt
 def delete_order(request):
     msg = ''
     status = 500
@@ -94,7 +92,7 @@ def send_shop_info_today():
     return
 
 
-@api_view(['GET', 'POST'])
+@csrf_exempt
 def show_top3(request):
     msg = ''
     status = 500
