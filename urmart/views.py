@@ -9,8 +9,17 @@ from .models import Product, Order
 from rest_framework.decorators import api_view
 
 
-@api_view(['GET', 'POST'])
-def product(request):
+@api_view(['GET', 'POST', 'DELETE'])
+def order_handler(request):
+    if request.method == 'GET':
+        return get_all(request)
+    elif request.method == 'POST':
+        return save(request)
+    elif request.method == 'DELETE':
+        return delete(request)
+
+
+def get_all(request):
     tb_product = ProductTable(Product.objects.all())
     RequestConfig(request).configure(tb_product)
 
@@ -27,11 +36,10 @@ def product(request):
     return render(request, 'urmart.html', tables)
 
 
-@api_view(['POST'])
-def save_order(request):
+def save(request):
     msg = ''
     status = 500
-    if request.is_ajax() and request.method == 'POST':
+    if request.is_ajax():
         try:
             product_id = request.POST.get('product_id')
             qty = request.POST.get('qty')
@@ -58,11 +66,10 @@ def save_order(request):
     return JsonResponse(response, status=status, safe=False)
 
 
-@api_view(['GET', 'POST'])
-def delete_order(request):
+def delete(request):
     msg = ''
     status = 500
-    if request.is_ajax() and request.method == 'POST':
+    if request.is_ajax():
         try:
             order_id = request.POST.get('order_id')
 
@@ -89,17 +96,12 @@ def delete_order(request):
     return JsonResponse(response, status=status, safe=False)
 
 
-def send_shop_info_today():
-    order.send_shop_info_today()
-    return
-
-
-@api_view(['GET', 'POST'])
+@api_view(['GET'])
 def show_top3(request):
     msg = ''
     status = 500
     result = []
-    if request.is_ajax() and request.method == 'POST':
+    if request.is_ajax():
         try:
             result = order.show_top3()
             status = 200
@@ -117,3 +119,8 @@ def show_top3(request):
         data=result
     )
     return JsonResponse(response, status=status, safe=False)
+
+
+def send_shop_info_today():
+    order.send_shop_info_today()
+    return

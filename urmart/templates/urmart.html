@@ -63,7 +63,7 @@
         }
         $.ajax({
             type:"POST",
-            url:'/urmart/save_order/',
+            url:'/urmart/order/',
             data:{
                 'product_id':product_id,
                 'qty':qty,
@@ -88,8 +88,8 @@
 
     function deleteOrder(order_id) {
         $.ajax({
-            type:"POST",
-            url:'/urmart/delete_order/',
+            type:"DELETE",
+            url:'/urmart/order/',
             data:{
                 'order_id':order_id
             },
@@ -100,14 +100,18 @@
             },
             error:function(result) {
                 var msg = JSON.parse(result['responseText'])['message'];
-                alert(msg);
+                if (msg == undefined) {
+                    alert(result['responseText']);
+                }else{
+                    alert(msg);
+                }
             }
         });
     }
 
     $("#top3").click(function(){
         $.ajax({
-            type:"POST",
+            type:"GET",
             url:'/urmart/show_top3/',
             data:{
                 '':''

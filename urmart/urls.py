@@ -18,8 +18,8 @@ from . import views
 
 
 urlpatterns = [
-    path('', views.product),
-    path('save_order/', views.save_order, name='save_order'),
-    path('delete_order/', views.delete_order, name='delete_order'),
+    path('order/', views.order_handler),
+    # path('save_order/', views.save_order, name='save_order'),
+    # path('delete_order/', views.delete_order, name='delete_order'),
     path('show_top3/', views.show_top3, name='show_top3'),
 ]
