@@ -2,7 +2,7 @@ ansicon==1.89.0
 arrow==0.15.5
 asgiref==3.2.3
 blessed==1.17.2
-Django==3.0.3
+Django==3.1.6
 django-picklefield==2.1.1
 django-q==1.1.0
 django-tables2==2.2.1
